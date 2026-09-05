@@ -3,13 +3,8 @@
 import React, { useState } from "react";
 import {
   Search,
-  Bell,
-  Sun,
-  Moon,
   Plus,
-  User as UserIcon,
   LogOut,
-  ChevronDown,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -26,7 +21,6 @@ export const TopNav: React.FC<TopNavProps> = ({
 }) => {
   const { user, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isDark, setIsDark] = useState(false);
 
   const getInitials = (name?: string, email?: string) => {
     if (name && name.trim()) {
@@ -65,23 +59,6 @@ export const TopNav: React.FC<TopNavProps> = ({
 
       {/* Right Action Icons & User */}
       <div className="flex items-center gap-3">
-        {/* Notifications */}
-        <button
-          className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition"
-          title="Notifications"
-        >
-          <Bell className="h-4 w-4" />
-        </button>
-
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setIsDark(!isDark)}
-          className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition"
-          title="Theme Toggle"
-        >
-          {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-        </button>
-
         {/* Primary CTA */}
         <button
           onClick={onOpenCreateRun}
