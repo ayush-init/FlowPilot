@@ -61,9 +61,9 @@ class RunService:
         # 3. Log initial activity
         init_act = RunActivity(
             run_id=order_run.id,
-            activity_type="WORKFLOW_STATE_CHANGE",
-            title="Order Supervisor Workflow Started",
-            content=f"Workflow initialized with supervisor '{supervisor.name}'. Base policy loaded.",
+            activity_type="WORKFLOW_START",
+            title=f"Workflow Started: Order #{order_run.order_id}",
+            content=f"Workflow initialized with supervisor '{supervisor.name}'. Monitoring order lifecycle.",
             metadata_json={"order_details": run_in.order_details, "supervisor": supervisor.name}
         )
         db.add(init_act)
@@ -134,15 +134,26 @@ class RunService:
                 async with AsyncSessionLocal() as session:
                     res = await session.execute(select(OrderRun).where(OrderRun.id == run_id))
                     run = res.scalar_one()
-                    # Record agent reasoning
+                    
+                    # 1. Record AI Wake
+                    session.add(RunActivity(
+                        run_id=run_id,
+                        activity_type="AI_WAKE",
+                        title="AI Supervisor Initialized",
+                        content="AI supervisor awoke to perform initial order state assessment.",
+                        metadata_json={"trigger": "WORKFLOW_START"}
+                    ))
+
+                    # 2. Record agent reasoning
                     session.add(RunActivity(
                         run_id=run_id,
                         activity_type="AGENT_REASONING",
-                        title="Workflow Start Reasoning",
+                        title="AI Supervisor Decision: Initial State Verified",
                         content=start_inference.thought_process,
                         metadata_json={"trigger": "WORKFLOW_START"}
                     ))
-                    # Record tool actions
+
+                    # 3. Record tool actions
                     for tc in start_inference.tool_calls:
                         session.add(RunActivity(
                             run_id=run_id,
@@ -152,7 +163,7 @@ class RunService:
                             metadata_json=tc
                         ))
 
-                    # Update memory
+                    # 4. Update memory
                     new_mem = await MemoryManager.compact_memory(
                         previous_memory=run.compact_memory,
                         trigger="WORKFLOW_START",
@@ -161,9 +172,26 @@ class RunService:
                         current_state=run.current_state
                     )
                     run.compact_memory = new_mem
+                    session.add(RunActivity(
+                        run_id=run_id,
+                        activity_type="MEMORY_UPDATE",
+                        title="AI Working Memory Updated",
+                        content=new_mem,
+                        metadata_json={"compact_memory": new_mem}
+                    ))
+
                     run.status = "SLEEPING"
                     sleep_secs = start_inference.next_sleep_seconds or supervisor.default_wakeup_interval_seconds
                     run.next_wakeup_at = datetime.now(timezone.utc) + timedelta(seconds=sleep_secs)
+
+                    # 5. Record sleep started
+                    session.add(RunActivity(
+                        run_id=run_id,
+                        activity_type="SLEEP_STARTED",
+                        title="Supervisor Sleep Started",
+                        content=f"Workflow sleeping durably. Next scheduled check in {sleep_secs // 60} minutes.",
+                        metadata_json={"next_wakeup_at": run.next_wakeup_at.isoformat(), "sleep_seconds": sleep_secs}
+                    ))
                     await session.commit()
 
             # 2. Main Event & Sleep Loop
@@ -190,10 +218,10 @@ class RunService:
                         run.status = "RUNNING"
                         session.add(RunActivity(
                             run_id=run_id,
-                            activity_type="WORKFLOW_STATE_CHANGE",
-                            title="Scheduled Wakeup Triggered",
-                            content="Wakeup timer elapsed. AI supervisor reviewing status.",
-                            metadata_json={}
+                            activity_type="AI_WAKE",
+                            title="AI Supervisor Woke Up: Scheduled Timer",
+                            content="Scheduled checkpoint timer elapsed. AI supervisor reviewing order progress.",
+                            metadata_json={"trigger": "SCHEDULED_WAKEUP"}
                         ))
                         await session.commit()
 
@@ -213,7 +241,7 @@ class RunService:
                         session.add(RunActivity(
                             run_id=run_id,
                             activity_type="AGENT_REASONING",
-                            title="Scheduled Wakeup Reasoning",
+                            title="AI Supervisor Decision: Routine Check Complete",
                             content=wake_inf.thought_process,
                             metadata_json={"trigger": "SCHEDULED_WAKEUP"}
                         ))
@@ -225,16 +253,31 @@ class RunService:
                                 content=str(tc.get('args', {})),
                                 metadata_json=tc
                             ))
-                        run.compact_memory = await MemoryManager.compact_memory(
+                        new_mem = await MemoryManager.compact_memory(
                             previous_memory=run.compact_memory,
                             trigger="SCHEDULED_WAKEUP",
                             event_info={},
                             actions_taken=wake_inf.tool_calls,
                             current_state=run.current_state
                         )
+                        run.compact_memory = new_mem
+                        session.add(RunActivity(
+                            run_id=run_id,
+                            activity_type="MEMORY_UPDATE",
+                            title="AI Working Memory Updated",
+                            content=new_mem,
+                            metadata_json={"compact_memory": new_mem}
+                        ))
                         run.status = "SLEEPING"
                         sleep_secs = wake_inf.next_sleep_seconds or supervisor.default_wakeup_interval_seconds
                         run.next_wakeup_at = datetime.now(timezone.utc) + timedelta(seconds=sleep_secs)
+                        session.add(RunActivity(
+                            run_id=run_id,
+                            activity_type="SLEEP_STARTED",
+                            title="Supervisor Sleep Started",
+                            content=f"Periodic check complete. Workflow sleeping until next scheduled checkpoint.",
+                            metadata_json={"next_wakeup_at": run.next_wakeup_at.isoformat(), "sleep_seconds": sleep_secs}
+                        ))
                         await session.commit()
                     continue
 
@@ -290,9 +333,9 @@ class RunService:
                         session.add(RunActivity(
                             run_id=run_id,
                             activity_type="WAKE_DECISION",
-                            title=f"Classifier: {'WAKE' if should_wake else 'SLEEP'}",
+                            title=f"Classifier Decision: {'WAKE' if should_wake else 'SLEEP'}",
                             content=reason,
-                            metadata_json={"should_wake": should_wake, "reason": reason}
+                            metadata_json={"should_wake": should_wake, "reason": reason, "event_type": event_type}
                         ))
                         await session.commit()
 
@@ -301,6 +344,13 @@ class RunService:
                             res = await session.execute(select(OrderRun).where(OrderRun.id == run_id))
                             run = res.scalar_one()
                             run.status = "RUNNING"
+                            session.add(RunActivity(
+                                run_id=run_id,
+                                activity_type="AI_WAKE",
+                                title=f"AI Supervisor Woke Up on {event_type}",
+                                content=f"Supervisor awoke to analyze signal '{event_type}'.",
+                                metadata_json={"event_type": event_type, "trigger": "EVENT_SIGNAL"}
+                            ))
                             await session.commit()
 
                         inf = await AgentReasoner.infer(
@@ -319,9 +369,9 @@ class RunService:
                             session.add(RunActivity(
                                 run_id=run_id,
                                 activity_type="AGENT_REASONING",
-                                title=f"Reasoning on {event_type}",
+                                title=f"AI Supervisor Decision on {event_type}",
                                 content=inf.thought_process,
-                                metadata_json={"trigger": "EVENT_SIGNAL"}
+                                metadata_json={"trigger": "EVENT_SIGNAL", "event_type": event_type}
                             ))
                             for tc in inf.tool_calls:
                                 session.add(RunActivity(
@@ -331,17 +381,32 @@ class RunService:
                                     content=str(tc.get('args', {})),
                                     metadata_json=tc
                                 ))
-                            run.compact_memory = await MemoryManager.compact_memory(
+                            new_mem = await MemoryManager.compact_memory(
                                 previous_memory=run.compact_memory,
                                 trigger="EVENT_SIGNAL",
                                 event_info={"event_type": event_type},
                                 actions_taken=inf.tool_calls,
                                 current_state=run.current_state
                             )
+                            run.compact_memory = new_mem
+                            session.add(RunActivity(
+                                run_id=run_id,
+                                activity_type="MEMORY_UPDATE",
+                                title="AI Working Memory Updated",
+                                content=new_mem,
+                                metadata_json={"compact_memory": new_mem}
+                            ))
                             if run.status != "COMPLETED" and run.status != "TERMINATED":
                                 run.status = "SLEEPING"
                             sleep_secs = inf.next_sleep_seconds or supervisor.default_wakeup_interval_seconds
                             run.next_wakeup_at = datetime.now(timezone.utc) + timedelta(seconds=sleep_secs)
+                            session.add(RunActivity(
+                                run_id=run_id,
+                                activity_type="SLEEP_STARTED",
+                                title="Supervisor Sleep Started",
+                                content=f"Event handling complete. Workflow sleeping until next checkpoint.",
+                                metadata_json={"next_wakeup_at": run.next_wakeup_at.isoformat(), "sleep_seconds": sleep_secs}
+                            ))
                             await session.commit()
 
         except Exception as e:
@@ -376,7 +441,7 @@ class RunService:
             session.add(RunActivity(
                 run_id=run_id,
                 activity_type="FINAL_RETROSPECTIVE",
-                title="End-of-Run Retrospective Generated",
+                title=f"Order Lifecycle Retrospective Generated ({final_status})",
                 content=f"Summary: {run.final_summary}",
                 metadata_json=retro
             ))
@@ -439,10 +504,10 @@ class RunService:
 
         act = RunActivity(
             run_id=run_id,
-            activity_type="INSTRUCTION_ADDED",
-            title="Human Guidance Injected",
+            activity_type="OPERATOR_DIRECTIVE",
+            title="Operator Directive Injected",
             content=instruction,
-            metadata_json={"instruction": instruction}
+            metadata_json={"instruction": instruction, "source": "Operator"}
         )
         db.add(act)
         await db.commit()
@@ -463,10 +528,10 @@ class RunService:
         run.status = "PAUSED"
         act = RunActivity(
             run_id=run_id,
-            activity_type="WORKFLOW_STATE_CHANGE",
-            title="Workflow Paused",
-            content="Operator paused execution.",
-            metadata_json={}
+            activity_type="WORKFLOW_PAUSED",
+            title="Workflow Paused by Operator",
+            content="Execution paused. Incoming signals will be queued until resumed.",
+            metadata_json={"action": "pause"}
         )
         db.add(act)
         await db.commit()
@@ -487,10 +552,10 @@ class RunService:
         run.status = "SLEEPING"
         act = RunActivity(
             run_id=run_id,
-            activity_type="WORKFLOW_STATE_CHANGE",
-            title="Workflow Resumed",
-            content="Operator resumed execution.",
-            metadata_json={}
+            activity_type="WORKFLOW_RESUMED",
+            title="Workflow Resumed by Operator",
+            content="Execution resumed. Supervisor active and monitoring signals.",
+            metadata_json={"action": "resume"}
         )
         db.add(act)
         await db.commit()
@@ -512,8 +577,8 @@ class RunService:
         run.completed_at = datetime.now(timezone.utc)
         act = RunActivity(
             run_id=run_id,
-            activity_type="WORKFLOW_STATE_CHANGE",
-            title="Workflow Terminated",
+            activity_type="WORKFLOW_TERMINATED",
+            title="Workflow Terminated by Operator",
             content=f"Reason: {reason}",
             metadata_json={"reason": reason}
         )

@@ -26,6 +26,12 @@ interface EventSimulatorProps {
 
 const SIMULATOR_EVENTS: EventTemplate[] = [
   {
+    event_type: "order_created",
+    category: "Lifecycle Start",
+    description: "Initial order created and submitted into commerce engine.",
+    payload: { customer_name: "Ayush Sharma", item: "Wireless Mechanical Keyboard", amount: 189.99, priority: "high" },
+  },
+  {
     event_type: "payment_confirmed",
     category: "Payment Flow",
     description: "Payment gateway settled full charge without fraud flags.",

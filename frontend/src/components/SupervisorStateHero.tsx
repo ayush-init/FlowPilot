@@ -67,12 +67,24 @@ export const SupervisorStateHero: React.FC<SupervisorStateHeroProps> = ({ run })
   }, [run.next_wakeup_at, run.status]);
 
   const getStateInfo = () => {
+    // Check if recent activity is action required
+    const lastActivity = run.activities && run.activities.length > 0 ? run.activities[0] : null;
+    const isActionRequired = lastActivity?.activity_type === "TOOL_ACTION";
+
     switch (run.status) {
       case "RUNNING":
+        if (isActionRequired) {
+          return {
+            label: "ACTION REQUIRED",
+            badgeBg: "bg-amber-50 text-amber-800 border-amber-300",
+            icon: <PlayCircle className="h-5 w-5 text-amber-600 animate-pulse" />,
+            statusDesc: "Supervisor actively intervening: executing business actions across fulfillment/logistics.",
+          };
+        }
         return {
           label: "RUNNING",
           badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
-          icon: <PlayCircle className="h-5 w-5 text-emerald-600" />,
+          icon: <PlayCircle className="h-5 w-5 text-emerald-600 animate-pulse" />,
           statusDesc: "Supervisor is currently awake, evaluating incoming signals, and executing necessary business actions.",
         };
       case "SLEEPING":
@@ -101,7 +113,7 @@ export const SupervisorStateHero: React.FC<SupervisorStateHeroProps> = ({ run })
           label: "TERMINATED",
           badgeBg: "bg-rose-50 text-rose-700 border-rose-200",
           icon: <ShieldAlert className="h-5 w-5 text-rose-600" />,
-          statusDesc: "Workflow was manually terminated before normal completion.",
+          statusDesc: "Workflow was manually terminated by operator before normal completion.",
         };
       default:
         return {
@@ -170,7 +182,7 @@ export const SupervisorStateHero: React.FC<SupervisorStateHeroProps> = ({ run })
       <div className="mt-3 pt-0.5 flex items-start gap-2.5 text-xs text-slate-700">
         <FileCheck className="h-4 w-4 text-indigo-600 flex-shrink-0 mt-0.5" />
         <div>
-          <strong className="text-slate-900 font-semibold mr-1.5">Last Policy Decision:</strong>
+          <strong className="text-slate-900 font-semibold mr-1.5">Last AI Supervisor Decision:</strong>
           <span className="text-slate-600 font-normal leading-relaxed">
             "{lastDecisionText}"
           </span>

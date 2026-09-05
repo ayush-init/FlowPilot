@@ -21,7 +21,7 @@ export const InstructionInjector: React.FC<InstructionInjectorProps> = ({
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   const instructionActivities = (run.activities || []).filter(
-    (a) => a.activity_type === "INSTRUCTION_ADDED"
+    (a) => a.activity_type === "OPERATOR_DIRECTIVE" || a.activity_type === "INSTRUCTION_ADDED"
   );
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -31,7 +31,7 @@ export const RetrospectiveModal: React.FC<RetrospectiveModalProps> = ({
                 Order #{run.order_id} Lifecycle Retrospective
               </h2>
               <p className="text-xs text-slate-500">
-                Policy: {run.supervisor?.name || "Guardian Policy"} • Status: {run.status}
+                AI Supervisor: {run.supervisor?.name || "Autonomous Guardian"} • Status: {run.status}
               </p>
             </div>
           </div>

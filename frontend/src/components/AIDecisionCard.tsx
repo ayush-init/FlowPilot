@@ -6,8 +6,9 @@ import {
   ShieldCheck,
   Clock,
   Wrench,
-  FileText,
   Bot,
+  Activity,
+  CheckCircle2,
 } from "lucide-react";
 import { OrderRun, parseUtcDate } from "../lib/types";
 
@@ -34,44 +35,63 @@ export const AIDecisionCard: React.FC<AIDecisionCardProps> = ({ run }) => {
 
   const hasToolAction = !!toolAction;
   const isCompleted = run.status === "COMPLETED";
+  const isTerminated = run.status === "TERMINATED";
+  const isPaused = run.status === "PAUSED";
+
+  // AI State
+  let aiState = "Sleeping";
+  if (run.status === "RUNNING") {
+    aiState = hasToolAction ? "Acting" : "Thinking";
+  } else if (isCompleted) {
+    aiState = "Completed";
+  } else if (isTerminated) {
+    aiState = "Terminated";
+  } else if (isPaused) {
+    aiState = "Paused";
+  }
+
   const decisionType = isCompleted
     ? "Complete Workflow"
+    : isTerminated
+    ? "Workflow Terminated"
     : hasToolAction
-    ? "Intervene & Execute Action"
-    : "Monitor & Sleep";
+    ? "Intervene & Escalate"
+    : "Observe & Stand By";
 
   let reasonText = "";
   if (reasoning?.content) {
     const lines = reasoning.content
       .split("\n")
       .map((l) => l.trim())
-      .filter((l) => l.length > 0 && !l.startsWith("```") && !l.startsWith("{"));
+      .filter((l) => l.length > 0 && !l.startsWith("```") && !l.startsWith("{") && !l.startsWith("[") && !l.toLowerCase().includes("system instruction"));
     reasonText = lines.slice(0, 2).join(" ").replace(/[\*\#\_]/g, "");
   }
 
   if (!reasonText) {
     if (isCompleted) {
-      reasonText = "All order milestones fulfilled. Final summary generated.";
+      reasonText = "All order milestones fulfilled and verified. Final journey retrospective captured.";
     } else if (hasToolAction) {
-      reasonText = "Event requires proactive operational notification under supervisor policy.";
+      reasonText = "Signal indicates operational exception requiring active department intervention under supervisor instructions.";
     } else {
-      reasonText = "Order is progressing normally. No escalation or intervention required.";
+      reasonText = "Order progress evaluated. No active anomalies detected; resuming durable scheduled monitoring.";
     }
   }
 
-  let actionName = "None (No action required)";
+  let actionName = "None (Passive monitoring)";
   if (toolAction) {
     actionName = toolAction.title.replace(/^Action:\s*/, "");
   }
 
-  let nextAction = "Sleep until next scheduled checkpoint";
+  let nextAction = "Sleep until next scheduled check";
   if (run.next_wakeup_at && run.status === "SLEEPING") {
-    nextAction = `Sleep until ${parseUtcDate(run.next_wakeup_at).toLocaleTimeString([], {
+    nextAction = `Sleeping until ${parseUtcDate(run.next_wakeup_at).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     })}`;
   } else if (isCompleted) {
     nextAction = "Workflow complete. No further wakeups.";
+  } else if (isTerminated) {
+    nextAction = "Workflow terminated.";
   }
 
   return (
@@ -84,74 +104,75 @@ export const AIDecisionCard: React.FC<AIDecisionCardProps> = ({ run }) => {
           </div>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
-              Policy Decision Summary
+              AI Supervisor Decision
             </h3>
             <span className="text-[10px] text-slate-500">
-              Evaluated by {run.supervisor?.name || "Guardian Policy"}
+              Evaluated by {run.supervisor?.name || "Autonomous Guardian"}
             </span>
           </div>
         </div>
 
-        <span
-          className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${
-            hasToolAction
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-blue-50 text-blue-700 border-blue-200"
-          }`}
-        >
-          {decisionType}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${
+              hasToolAction
+                ? "bg-amber-50 text-amber-800 border-amber-200"
+                : isCompleted
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                : "bg-blue-50 text-blue-800 border-blue-200"
+            }`}
+          >
+            {decisionType}
+          </span>
+        </div>
       </div>
 
-      {/* Grid of 4 Key Attributes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      {/* Grid of Key Attributes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
         {/* Trigger */}
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-150 space-y-0.5">
           <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
             <Zap className="h-3 w-3 text-indigo-600" />
-            <span>Trigger Event</span>
+            <span>Trigger</span>
           </div>
           <p className="text-xs font-mono font-semibold text-slate-900 truncate">{trigger}</p>
         </div>
 
-        {/* Decision */}
+        {/* AI State */}
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-150 space-y-0.5">
           <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-            <ShieldCheck className="h-3 w-3 text-emerald-600" />
-            <span>Decision</span>
+            <Activity className="h-3 w-3 text-emerald-600" />
+            <span>AI State</span>
           </div>
-          <p
-            className={`text-xs font-semibold ${
-              hasToolAction ? "text-emerald-700" : "text-slate-800"
-            }`}
-          >
-            {hasToolAction ? "Intervene & Escalate" : "Passive Monitor"}
+          <p className="text-xs font-semibold text-slate-900 truncate flex items-center gap-1.5">
+            <span className={`h-1.5 w-1.5 rounded-full ${run.status === "RUNNING" ? "bg-emerald-500 animate-ping" : "bg-blue-500"}`} />
+            {aiState}
           </p>
         </div>
 
-        {/* Action */}
+        {/* Action Executed */}
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-150 space-y-0.5">
           <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
             <Wrench className="h-3 w-3 text-amber-600" />
-            <span>Action Executed</span>
+            <span>Action</span>
           </div>
           <p className="text-xs font-mono font-medium text-slate-800 truncate">{actionName}</p>
         </div>
 
-        {/* Next Step */}
+        {/* Next State */}
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-150 space-y-0.5">
           <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
             <Clock className="h-3 w-3 text-blue-600" />
-            <span>Next Step</span>
+            <span>Next State</span>
           </div>
           <p className="text-xs font-medium text-slate-700 truncate">{nextAction}</p>
         </div>
       </div>
 
-      {/* Reason Paragraph */}
-      <div className="p-3 rounded-lg bg-slate-50/70 border border-slate-150 text-xs">
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-          Rationale & Context
+      {/* Concise Decision Rationale */}
+      <div className="p-3 rounded-lg bg-slate-50/70 border border-slate-150 text-xs space-y-1">
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+          Decision Rationale
         </span>
         <p className="text-slate-700 leading-relaxed font-normal">{reasonText}</p>
       </div>

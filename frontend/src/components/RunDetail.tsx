@@ -113,7 +113,7 @@ export const RunDetail: React.FC<RunDetailProps> = ({ runId, onRefreshList }) =>
                 {run.order_id}
               </span>
               <span className="text-xs text-slate-500 font-medium">
-                Policy: <strong className="text-slate-800">{run.supervisor?.name || "Guardian Policy"}</strong>
+                Supervisor: <strong className="text-slate-800">{run.supervisor?.name || "Autonomous Guardian"}</strong>
               </span>
             </div>
 
