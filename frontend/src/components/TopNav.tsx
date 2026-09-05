@@ -65,14 +65,6 @@ export const TopNav: React.FC<TopNavProps> = ({
 
       {/* Right Action Icons & User */}
       <div className="flex items-center gap-3">
-        {/* Cluster / Runtime Environment */}
-        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-[11px] text-slate-600 font-mono">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Production</span>
-          <span className="text-slate-300">•</span>
-          <span>us-east-1</span>
-        </div>
-
         {/* Notifications */}
         <button
           className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition"

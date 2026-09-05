@@ -13,7 +13,6 @@ import { RunDetail } from "../components/RunDetail";
 import { TemplatesView } from "../components/TemplatesView";
 import { ActivityView } from "../components/ActivityView";
 import { AnalyticsView } from "../components/AnalyticsView";
-import { SettingsView } from "../components/SettingsView";
 import { CreateRunModal } from "../components/CreateRunModal";
 import { SupervisorModal } from "../components/SupervisorModal";
 import { Boxes, RefreshCw } from "lucide-react";
@@ -169,10 +168,6 @@ function MainApp() {
 
           {currentTab === "analytics" && (
             <AnalyticsView runs={runs} />
-          )}
-
-          {currentTab === "settings" && (
-            <SettingsView />
           )}
         </main>
       </div>

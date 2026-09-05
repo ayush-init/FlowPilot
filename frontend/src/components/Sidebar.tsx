@@ -7,14 +7,10 @@ import {
   SlidersHorizontal,
   Activity,
   BarChart3,
-  Settings,
   Boxes,
-  Workflow,
-  Database,
-  Cpu,
 } from "lucide-react";
 
-export type NavTab = "dashboard" | "runs" | "templates" | "activity" | "analytics" | "settings";
+export type NavTab = "dashboard" | "runs" | "templates" | "activity" | "analytics";
 
 interface SidebarProps {
   currentTab: NavTab;
@@ -33,7 +29,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "templates" as NavTab, label: "Templates", icon: SlidersHorizontal },
     { id: "activity" as NavTab, label: "Activity", icon: Activity },
     { id: "analytics" as NavTab, label: "Analytics", icon: BarChart3 },
-    { id: "settings" as NavTab, label: "Settings", icon: Settings },
   ];
 
   return (
@@ -86,49 +81,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             );
           })}
         </nav>
-      </div>
-
-      {/* Bottom Telemetry Card */}
-      <div className="p-3.5 m-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500">
-          <span>System Telemetry</span>
-          <span className="flex items-center gap-1 text-emerald-600">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Live
-          </span>
-        </div>
-
-        <div className="space-y-1.5 text-[11px] text-slate-600">
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
-              <Workflow className="h-3 w-3 text-slate-400" />
-              Temporal
-            </span>
-            <span className="text-emerald-700 font-medium flex items-center gap-1 text-[10px]">
-              <span className="h-1 w-1 rounded-full bg-emerald-500" /> Connected
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
-              <Database className="h-3 w-3 text-slate-400" />
-              Database
-            </span>
-            <span className="text-emerald-700 font-medium flex items-center gap-1 text-[10px]">
-              <span className="h-1 w-1 rounded-full bg-emerald-500" /> Connected
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
-              <Cpu className="h-3 w-3 text-slate-400" />
-              AI Engine
-            </span>
-            <span className="text-emerald-700 font-medium flex items-center gap-1 text-[10px]">
-              <span className="h-1 w-1 rounded-full bg-emerald-500" /> Connected
-            </span>
-          </div>
-        </div>
       </div>
     </aside>
   );
