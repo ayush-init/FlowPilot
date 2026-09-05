@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   PlayCircle,
   PauseCircle,
@@ -38,7 +38,7 @@ export const RunDetail: React.FC<RunDetailProps> = ({ runId, onRefreshList }) =>
   const [actionLoading, setActionLoading] = useState(false);
   const [showTerminateConfirm, setShowTerminateConfirm] = useState(false);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const data = await fetchRunDetail(runId);
       setRun(data);
@@ -47,13 +47,14 @@ export const RunDetail: React.FC<RunDetailProps> = ({ runId, onRefreshList }) =>
     } finally {
       setLoading(false);
     }
-  };
+  }, [runId]);
 
   useEffect(() => {
+    setLoading(true);
     loadData();
     const interval = setInterval(loadData, 3000);
     return () => clearInterval(interval);
-  }, [runId]);
+  }, [loadData]);
 
   if (loading || !run) {
     return (

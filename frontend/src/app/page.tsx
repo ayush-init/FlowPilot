@@ -39,7 +39,14 @@ export default function DashboardPage() {
         fetchRuns(filterStatus === "all" ? undefined : filterStatus),
       ]);
       setSupervisors(sups);
-      setRuns(runsData);
+      setRuns((prevRuns) => {
+        const prevJson = JSON.stringify(prevRuns.map((r) => ({ id: r.id, status: r.status, updated_at: r.updated_at })));
+        const newJson = JSON.stringify(runsData.map((r) => ({ id: r.id, status: r.status, updated_at: r.updated_at })));
+        if (prevJson === newJson) {
+          return prevRuns;
+        }
+        return runsData;
+      });
       setSelectedRunId((prev) => {
         if (prev && runsData.some((r) => r.id === prev)) {
           return prev;
@@ -158,6 +165,7 @@ export default function DashboardPage() {
         <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
           {selectedRunId ? (
             <RunDetail
+              key={selectedRunId}
               runId={selectedRunId}
               onRefreshList={loadAll}
             />
