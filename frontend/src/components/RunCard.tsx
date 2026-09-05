@@ -8,7 +8,7 @@ import {
   Bot,
   Zap,
 } from "lucide-react";
-import { OrderRun } from "../lib/types";
+import { OrderRun, parseUtcDate } from "../lib/types";
 
 interface RunCardProps {
   run: OrderRun;
@@ -20,7 +20,7 @@ export const RunCard: React.FC<RunCardProps> = ({ run, isSelected, onSelect }) =
   const getRelativeTime = (timestamp: string) => {
     try {
       const now = new Date().getTime();
-      const time = new Date(timestamp).getTime();
+      const time = parseUtcDate(timestamp).getTime();
       const diffSecs = Math.max(0, Math.floor((now - time) / 1000));
       if (diffSecs < 60) return "just now";
       const diffMins = Math.floor(diffSecs / 60);

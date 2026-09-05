@@ -12,7 +12,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-import { RunActivity } from "../lib/types";
+import { RunActivity, parseUtcDate } from "../lib/types";
 
 interface BusinessActionsListProps {
   activities: RunActivity[];
@@ -138,7 +138,7 @@ export const BusinessActionsList: React.FC<BusinessActionsListProps> = ({ activi
                 </div>
 
                 <span className="text-[10px] font-mono text-slate-500 whitespace-nowrap">
-                  {new Date(act.created_at).toLocaleTimeString([], {
+                  {parseUtcDate(act.created_at).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                     second: "2-digit",

@@ -8,7 +8,7 @@ import {
   Activity,
   Layers,
 } from "lucide-react";
-import { OrderRun } from "../lib/types";
+import { OrderRun, parseUtcDate } from "../lib/types";
 
 interface TemporalObservabilityCardProps {
   run: OrderRun;
@@ -25,8 +25,8 @@ export const TemporalObservabilityCard: React.FC<TemporalObservabilityCardProps>
 
   const getDuration = () => {
     try {
-      const start = new Date(run.created_at).getTime();
-      const end = run.completed_at ? new Date(run.completed_at).getTime() : new Date().getTime();
+      const start = parseUtcDate(run.created_at).getTime();
+      const end = run.completed_at ? parseUtcDate(run.completed_at).getTime() : new Date().getTime();
       const diffSecs = Math.max(0, Math.floor((end - start) / 1000));
       const mins = Math.floor(diffSecs / 60);
       const secs = diffSecs % 60;
@@ -97,7 +97,7 @@ export const TemporalObservabilityCard: React.FC<TemporalObservabilityCardProps>
         <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-150 space-y-0.5">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Started At</span>
           <span className="font-mono text-slate-800">
-            {new Date(run.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            {parseUtcDate(run.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </span>
         </div>
 

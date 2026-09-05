@@ -11,7 +11,7 @@ import {
   RefreshCw,
   FileCheck,
 } from "lucide-react";
-import { OrderRun } from "../lib/types";
+import { OrderRun, parseUtcDate } from "../lib/types";
 
 interface SupervisorStateHeroProps {
   run: OrderRun;
@@ -39,7 +39,7 @@ export const SupervisorStateHero: React.FC<SupervisorStateHeroProps> = ({ run })
 
     const updateCountdown = () => {
       const now = new Date().getTime();
-      const target = new Date(run.next_wakeup_at!).getTime();
+      const target = parseUtcDate(run.next_wakeup_at!).getTime();
       const diffMs = target - now;
 
       if (diffMs <= 0) {
@@ -147,7 +147,7 @@ export const SupervisorStateHero: React.FC<SupervisorStateHeroProps> = ({ run })
                 Next Scheduled Check
               </div>
               <div className="text-xs font-mono font-bold text-blue-700">
-                {new Date(run.next_wakeup_at).toLocaleTimeString([], {
+                {parseUtcDate(run.next_wakeup_at).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                   second: "2-digit",

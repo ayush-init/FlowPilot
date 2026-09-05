@@ -9,7 +9,7 @@ import {
   FileText,
   Bot,
 } from "lucide-react";
-import { OrderRun } from "../lib/types";
+import { OrderRun, parseUtcDate } from "../lib/types";
 
 interface AIDecisionCardProps {
   run: OrderRun;
@@ -66,7 +66,7 @@ export const AIDecisionCard: React.FC<AIDecisionCardProps> = ({ run }) => {
 
   let nextAction = "Sleep until next scheduled checkpoint";
   if (run.next_wakeup_at && run.status === "SLEEPING") {
-    nextAction = `Sleep until ${new Date(run.next_wakeup_at).toLocaleTimeString([], {
+    nextAction = `Sleep until ${parseUtcDate(run.next_wakeup_at).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     })}`;

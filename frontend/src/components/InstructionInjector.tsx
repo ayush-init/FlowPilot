@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { UserCheck, Send, CheckCircle2, History } from "lucide-react";
 import { injectInstruction } from "../lib/api";
-import { OrderRun } from "../lib/types";
+import { OrderRun, parseUtcDate } from "../lib/types";
 
 interface InstructionInjectorProps {
   run: OrderRun;
@@ -141,7 +141,7 @@ export const InstructionInjector: React.FC<InstructionInjectorProps> = ({
                 <div className="flex items-center justify-between text-[10px]">
                   <span className="font-bold text-slate-900">Operator Directive</span>
                   <span className="font-mono text-slate-500">
-                    {new Date(item.created_at).toLocaleTimeString([], {
+                    {parseUtcDate(item.created_at).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}

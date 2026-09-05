@@ -14,7 +14,7 @@ import {
   Layers,
   AlertTriangle,
 } from "lucide-react";
-import { OrderRun } from "../lib/types";
+import { OrderRun, parseUtcDate } from "../lib/types";
 import { pauseRun, resumeRun, terminateRun, fetchRunDetail } from "../lib/api";
 import { SupervisorStateHero } from "./SupervisorStateHero";
 import { AIDecisionCard } from "./AIDecisionCard";
@@ -208,7 +208,7 @@ export const RunDetail: React.FC<RunDetailProps> = ({ runId, onRefreshList }) =>
             <div>
               <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Started At</span>
               <span className="text-slate-700 font-mono">
-                {new Date(run.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {parseUtcDate(run.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </span>
             </div>
           </div>

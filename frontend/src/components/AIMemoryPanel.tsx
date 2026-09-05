@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
-import { OrderRun } from "../lib/types";
+import { OrderRun, parseUtcDate } from "../lib/types";
 
 interface AIMemoryPanelProps {
   run: OrderRun;
@@ -129,7 +129,7 @@ export const AIMemoryPanel: React.FC<AIMemoryPanelProps> = ({ run }) => {
               >
                 <span className="text-slate-800 font-medium truncate max-w-[200px]">{evt.title}</span>
                 <span className="text-[10px] font-mono text-slate-500">
-                  {new Date(evt.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {parseUtcDate(evt.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
               </div>
             ))}
@@ -148,7 +148,7 @@ export const AIMemoryPanel: React.FC<AIMemoryPanelProps> = ({ run }) => {
             View Full Working Memory Text
           </span>
           <span className="text-[10px] text-slate-400">
-            Updated {new Date(run.updated_at || run.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            Updated {parseUtcDate(run.updated_at || run.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </span>
         </button>
 

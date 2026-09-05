@@ -13,7 +13,7 @@ import {
   Clock,
   Bot,
 } from "lucide-react";
-import { RunActivity, ActivityType } from "../lib/types";
+import { RunActivity, ActivityType, parseUtcDate } from "../lib/types";
 
 interface ActivityTimelineProps {
   activities: RunActivity[];
@@ -160,7 +160,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities }
                   <span className="text-xs font-bold text-slate-900">{act.title}</span>
                 </div>
                 <span className="text-[10px] text-slate-500 font-mono whitespace-nowrap">
-                  {new Date(act.created_at).toLocaleTimeString([], {
+                  {parseUtcDate(act.created_at).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
                     second: "2-digit",
