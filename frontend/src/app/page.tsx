@@ -40,9 +40,12 @@ export default function DashboardPage() {
       ]);
       setSupervisors(sups);
       setRuns(runsData);
-      if (!selectedRunId && runsData.length > 0) {
-        setSelectedRunId(runsData[0].id);
-      }
+      setSelectedRunId((prev) => {
+        if (prev && runsData.some((r) => r.id === prev)) {
+          return prev;
+        }
+        return runsData.length > 0 ? runsData[0].id : null;
+      });
     } catch (err) {
       console.error("Failed loading dashboard data", err);
     } finally {
