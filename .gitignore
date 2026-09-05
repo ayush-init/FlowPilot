@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 venv/
 .venv/
 __pycache__/
@@ -29,6 +29,8 @@ htmlcov/
 .env
 .env.local
 .env.*.local
+**/.env*
+backend/.env
 
 # Databases & local logs
 *.sqlite

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FlowPilot | Long-Running AI Order Supervisor",
-  description: "Durable, event-driven AI supervisor overseeing order lifecycles with Temporal and Google Gemini.",
+  title: "FlowPilot | Autonomous Order Operations Control",
+  description: "Durable, event-driven autonomous order operations supervisor platform.",
 };
 
 export default function RootLayout({
@@ -12,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+    <html lang="en">
+      <body className="bg-slate-50 text-slate-900 antialiased selection:bg-indigo-600 selection:text-white">
         {children}
       </body>
     </html>

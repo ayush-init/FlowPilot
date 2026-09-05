@@ -94,7 +94,13 @@ async def execute_batch_scenario(
             payload=step.payload,
             description=step.description
         )
-        res = await RunService.send_event_signal(db, scenario_in.run_id, signal_input)
+        res = await RunService.send_event_signal(
+            db,
+            scenario_in.run_id,
+            signal_input.event_type,
+            signal_input.payload,
+            signal_input.description or "",
+        )
         results.append(res)
 
     return {

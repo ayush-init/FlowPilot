@@ -1,4 +1,4 @@
-﻿from typing import Optional
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, field_validator
 
@@ -11,11 +11,11 @@ class Settings(BaseSettings):
     PORT: int = 8000
     API_V1_PREFIX: str = "/api"
 
-    # Database Configuration (PostgreSQL / Supabase with asyncpg)
+    # Database Configuration (PostgreSQL / Supabase / Neon with asyncpg)
     # Default fallback to aiosqlite for local dev/testing if PostgreSQL URL is placeholder or unset
     DATABASE_URL: str = Field(
         default="sqlite+aiosqlite:///./flowpilot.db",
-        description="Async connection URL for PostgreSQL/Supabase (postgresql+asyncpg://...) or SQLite (sqlite+aiosqlite:///...)"
+        description="Async connection URL for PostgreSQL/Supabase/Neon (postgresql+asyncpg://...) or SQLite (sqlite+aiosqlite:///...)"
     )
 
     @field_validator("DATABASE_URL", mode="before")
@@ -23,11 +23,28 @@ class Settings(BaseSettings):
     def assemble_db_connection(cls, v: Optional[str]) -> str:
         if not v or v.strip() == "" or "your_project_ref" in v or "your_supabase_password" in v:
             return "sqlite+aiosqlite:///./flowpilot.db"
-        # Supabase/PostgreSQL connection string normalization
+        
+        # Clean quotes
+        v = v.strip().strip("'\"")
+
+        # Neon / Supabase / PostgreSQL connection string normalization
         if v.startswith("postgres://"):
-            return v.replace("postgres://", "postgresql+asyncpg://", 1)
-        if v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
-            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+            v = v.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif v.startswith("postgresql://") and not v.startswith("postgresql+asyncpg://"):
+            v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        
+        # Normalize sslmode for asyncpg
+        if "sslmode=require" in v:
+            v = v.replace("sslmode=require", "ssl=require")
+        
+        # Strip libpq-specific flags unsupported by asyncpg
+        if "&channel_binding=require" in v:
+            v = v.replace("&channel_binding=require", "")
+        elif "?channel_binding=require&" in v:
+            v = v.replace("channel_binding=require&", "")
+        elif "?channel_binding=require" in v:
+            v = v.replace("?channel_binding=require", "")
+
         return v
 
     # Google Gemini AI Settings

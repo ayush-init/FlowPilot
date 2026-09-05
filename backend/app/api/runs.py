@@ -63,7 +63,13 @@ async def send_event_signal(
     """
     Deliver an incoming order lifecycle event signal into the running Temporal workflow.
     """
-    return await RunService.send_event_signal(db, run_id, event_in)
+    return await RunService.send_event_signal(
+        db,
+        run_id,
+        event_in.event_type,
+        event_in.payload,
+        event_in.description or "",
+    )
 
 
 @router.post("/{run_id}/instructions")
@@ -75,7 +81,7 @@ async def inject_instructions(
     """
     Inject mid-run operator guidance/instructions into a live workflow run.
     """
-    return await RunService.send_instruction(db, run_id, instruction_in)
+    return await RunService.send_instruction(db, run_id, instruction_in.instruction)
 
 
 @router.post("/{run_id}/pause")
