@@ -29,7 +29,7 @@ Before deploying, ensure you have:
    - **Root Directory**: *(leave blank)*
    - **Runtime**: `Python 3`
    - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
    - **Plan**: `Free`
 
 ### Step 2: Configure Environment Variables on Render
@@ -38,6 +38,7 @@ Click on **"Advanced"** or navigate to the **"Environment"** tab, and add the fo
 | Variable Name | Value | Description |
 |---|---|---|
 | `PYTHON_VERSION` | `3.11.9` | Python runtime version |
+| `PYTHONPATH` | `.` | Ensures Python finds root modules |
 | `ENV` | `production` | Enables production mode & cross-site cookies |
 | `DEBUG` | `false` | Disables debug logs |
 | `DATABASE_URL` | `postgresql+asyncpg://neondb_owner:npg_8q4wJgNheKjA@ep-rough-morning-a1n4q2i7-pooler.ap-southeast-1.aws.neon.tech/neondb?ssl=require` | Your Neon Postgres DB |
