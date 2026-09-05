@@ -95,19 +95,12 @@ export const TopNav: React.FC<TopNavProps> = ({
         <div className="relative">
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 transition focus:outline-none"
+            className="flex items-center gap-2 p-0.5 rounded-full hover:ring-2 hover:ring-indigo-100 transition focus:outline-none"
+            title={displayName}
           >
-            {user?.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt={displayName}
-                className="h-7 w-7 rounded-full object-cover shadow-xs border border-slate-200"
-              />
-            ) : (
-              <div className="h-7 w-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs">
-                {initials}
-              </div>
-            )}
+            <div className="h-7 w-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[11px] font-bold shadow-xs tracking-wider">
+              {initials}
+            </div>
           </button>
 
           {showUserMenu && (
