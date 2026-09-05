@@ -130,7 +130,7 @@ export const SupervisorStateHero: React.FC<SupervisorStateHeroProps> = ({ run })
           </span>
 
           <span className="text-xs text-slate-500 font-medium">
-            Supervisor: <strong className="text-slate-800">{run.supervisor?.name || "Autonomous Guardian"}</strong>
+            Supervisor: <strong className="text-slate-800">{run.supervisor?.name || "Standard E-Commerce Guardian"}</strong>
           </span>
         </div>
 

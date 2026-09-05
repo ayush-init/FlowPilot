@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 from typing import Optional, List, Dict, Any, Literal
 from pydantic import BaseModel, Field, ConfigDict
 from backend.app.schemas.supervisor import SupervisorResponse
@@ -55,6 +55,7 @@ class OrderRunResponse(BaseModel):
     id: str
     order_id: str
     supervisor_id: Optional[str]
+    supervisor: Optional[SupervisorResponse] = None
     temporal_workflow_id: str
     status: str
     compact_memory: str
@@ -72,5 +73,4 @@ class OrderRunResponse(BaseModel):
 
 
 class OrderRunDetailResponse(OrderRunResponse):
-    supervisor: Optional[SupervisorResponse] = None
     activities: List[RunActivityResponse] = Field(default_factory=list)

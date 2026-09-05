@@ -220,7 +220,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </div>
                       <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">
                         <ShieldCheck className="h-3 w-3 text-indigo-600" />
-                        <span>{run.supervisor?.name || "Autonomous Guardian"}</span>
+                        <span className="font-medium text-slate-700">
+                          {run.supervisor?.name || supervisors.find((s) => s.id === run.supervisor_id)?.name || "Standard E-Commerce Guardian"}
+                        </span>
                       </div>
                     </div>
 

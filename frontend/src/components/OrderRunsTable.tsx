@@ -356,7 +356,7 @@ export const OrderRunsTable: React.FC<OrderRunsTableProps> = ({
                         <div className="flex items-center gap-1.5">
                           <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" />
                           <span className="font-semibold text-slate-900">
-                            {run.supervisor?.name || "Autonomous Guardian"}
+                            {run.supervisor?.name || supervisors.find((s) => s.id === run.supervisor_id)?.name || "Standard E-Commerce Guardian"}
                           </span>
                         </div>
                         <div className="text-[10px] text-slate-500 mt-0.5">
