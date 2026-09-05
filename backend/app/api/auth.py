@@ -79,7 +79,7 @@ async def email_login(
             value=token,
             max_age=settings.SESSION_MAX_AGE_SECONDS,
             httponly=True,
-            samesite="lax",
+            samesite="none" if is_prod else "lax",
             secure=is_prod,
             path="/"
         )
@@ -128,7 +128,7 @@ async def google_oauth_callback(
 
         is_prod = settings.ENV == "production"
         redirect_res = RedirectResponse(
-            url=f"{settings.FRONTEND_URL}/?auth_success=1",
+            url=f"{settings.FRONTEND_URL}/?auth_success=1&token={token}",
             status_code=status.HTTP_302_FOUND
         )
         redirect_res.set_cookie(
@@ -136,7 +136,7 @@ async def google_oauth_callback(
             value=token,
             max_age=settings.SESSION_MAX_AGE_SECONDS,
             httponly=True,
-            samesite="lax",
+            samesite="none" if is_prod else "lax",
             secure=is_prod,
             path="/"
         )

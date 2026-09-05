@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { User } from "../lib/types";
-import { fetchCurrentUser, loginWithEmail, fetchGoogleAuthUrl, logoutUser } from "../lib/api";
+import { fetchCurrentUser, loginWithEmail, fetchGoogleAuthUrl, logoutUser, setStoredToken } from "../lib/api";
 
 interface AuthContextType {
   user: User | null;
@@ -38,17 +38,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, [initAuth]);
 
-  // Check URL params for oauth errors or success messages
+  // Check URL params for oauth errors, success messages, or token pass-through
   useEffect(() => {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
       const authError = urlParams.get("auth_error");
       const authSuccess = urlParams.get("auth_success");
+      const token = urlParams.get("token");
+
+      if (token) {
+        setStoredToken(token);
+      }
 
       if (authError) {
         setError(`Google Sign-In failed: ${authError}`);
         window.history.replaceState({}, document.title, window.location.pathname);
-      } else if (authSuccess) {
+      } else if (authSuccess || token) {
         window.history.replaceState({}, document.title, window.location.pathname);
         initAuth();
       }
