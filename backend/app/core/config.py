@@ -56,6 +56,15 @@ class Settings(BaseSettings):
     TEMPORAL_NAMESPACE: str = "default"
     TEMPORAL_TASK_QUEUE: str = "flowpilot-order-supervisor-queue"
 
+    # Authentication & Session Settings
+    SESSION_SECRET: str = "flowpilot-super-secret-session-key-2026-prod-secure"
+    SESSION_MAX_AGE_SECONDS: int = 60 * 60 * 24 * 7  # 7 days
+    SESSION_COOKIE_NAME: str = "flowpilot_session"
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/auth/google/callback"
+    FRONTEND_URL: str = "http://localhost:3000"
+
     model_config = SettingsConfigDict(
         env_file="backend/.env",
         env_file_encoding="utf-8",

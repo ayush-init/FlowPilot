@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { Supervisor, OrderRun } from "../lib/types";
 import { fetchSupervisors, fetchRuns } from "../lib/api";
+import { AuthProvider, useAuth } from "../context/AuthContext";
+import { LoginView } from "../components/LoginView";
 import { Sidebar, NavTab } from "../components/Sidebar";
 import { TopNav } from "../components/TopNav";
 import { DashboardView } from "../components/DashboardView";
@@ -14,8 +16,10 @@ import { AnalyticsView } from "../components/AnalyticsView";
 import { SettingsView } from "../components/SettingsView";
 import { CreateRunModal } from "../components/CreateRunModal";
 import { SupervisorModal } from "../components/SupervisorModal";
+import { Boxes, RefreshCw } from "lucide-react";
 
-export default function App() {
+function MainApp() {
+  const { user, loading: authLoading } = useAuth();
   const [currentTab, setCurrentTab] = useState<NavTab>("dashboard");
   const [supervisors, setSupervisors] = useState<Supervisor[]>([]);
   const [runs, setRuns] = useState<OrderRun[]>([]);
@@ -28,6 +32,7 @@ export default function App() {
   const [isSupervisorModalOpen, setIsSupervisorModalOpen] = useState(false);
 
   const loadAll = async () => {
+    if (!user) return;
     try {
       const [sups, runsData] = await Promise.all([
         fetchSupervisors(),
@@ -50,11 +55,36 @@ export default function App() {
   };
 
   useEffect(() => {
-    loadAll();
-    const timer = setInterval(loadAll, 3000);
-    return () => clearInterval(timer);
-  }, []);
+    if (user) {
+      loadAll();
+      const timer = setInterval(loadAll, 3000);
+      return () => clearInterval(timer);
+    }
+  }, [user]);
 
+  // Auth Loading Screen
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+        <div className="text-center space-y-3">
+          <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center text-white mx-auto shadow-xs">
+            <Boxes className="h-5 w-5 text-indigo-400" />
+          </div>
+          <p className="text-xs font-mono font-medium text-slate-500 flex items-center gap-2 justify-center">
+            <RefreshCw className="h-3.5 w-3.5 animate-spin text-indigo-600" />
+            Verifying FlowPilot session...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Unauthenticated -> Render Login View
+  if (!user) {
+    return <LoginView />;
+  }
+
+  // Authenticated Handlers
   const handleSelectRun = (runId: string) => {
     setSelectedRunId(runId);
     setCurrentTab("runs");
@@ -67,7 +97,6 @@ export default function App() {
 
   const handleTabChange = (tab: NavTab) => {
     if (tab === "runs" && currentTab === "runs" && selectedRunId) {
-      // If clicking runs again while viewing a detail, reset back to table
       setSelectedRunId(null);
     }
     setCurrentTab(tab);
@@ -169,5 +198,13 @@ export default function App() {
         }}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
   );
 }

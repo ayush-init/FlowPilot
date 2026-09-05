@@ -1,9 +1,10 @@
-﻿import asyncio
+import asyncio
 from sqlalchemy import select
 from backend.app.db.session import engine, Base, AsyncSessionLocal
 from backend.app.models.supervisor import Supervisor
 from backend.app.models.order_run import OrderRun
 from backend.app.models.run_activity import RunActivity
+from backend.app.models.user import User
 
 
 DEFAULT_SUPERVISORS = [
